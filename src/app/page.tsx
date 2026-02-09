@@ -17,8 +17,8 @@ function extensionFromFilename(filename: string): Extension | null {
 
 function conversionTargets(ext: Extension | null): Extension[] {
   if (ext === "pdf") return ["docx", "txt"];
-  if (ext === "docx") return ["pdf"];
-  if (ext === "txt") return ["pdf"];
+  if (ext === "docx") return ["pdf", "txt"];
+  if (ext === "txt") return ["pdf", "docx"];
   return [];
 }
 
@@ -34,7 +34,10 @@ export default function Home() {
     [selectedFile],
   );
 
-  const targetOptions = useMemo(() => conversionTargets(sourceExt), [sourceExt]);
+  const targetOptions = useMemo(
+    () => conversionTargets(sourceExt),
+    [sourceExt],
+  );
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
@@ -68,7 +71,10 @@ export default function Home() {
         throw new Error(data.error ?? "Gagal melakukan konversi.");
       }
 
-      const blob = await response.blob();
+      const arrayBuffer = await response.arrayBuffer();
+      const mimeType =
+        response.headers.get("content-type") || "application/octet-stream";
+      const blob = new Blob([arrayBuffer], { type: mimeType });
       const sourceName = selectedFile.name.replace(/\.[^/.]+$/, "");
       const outputFilename = `${sourceName}.${targetFormat}`;
 
@@ -89,16 +95,31 @@ export default function Home() {
   const handleDownload = () => {
     if (!result) return;
 
+    const nav = window.navigator as Navigator & {
+      msSaveOrOpenBlob?: (blob: Blob, filename: string) => boolean;
+    };
+    if (nav.msSaveOrOpenBlob) {
+      nav.msSaveOrOpenBlob(result.blob, result.outputFilename);
+      return;
+    }
+
     const url = URL.createObjectURL(result.blob);
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = result.outputFilename;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    anchor.style.display = "none";
+    document.body.appendChild(anchor);
+    setTimeout(() => {
+      anchor.click();
+      setTimeout(() => {
+        document.body.removeChild(anchor);
+        URL.revokeObjectURL(url);
+      }, 10000);
+    }, 100);
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <main className="min-h-screen bg-linear-to-b from-slate-100 to-slate-200 dark:from-slate-950 dark:to-slate-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-700 ease-in-out">
       <nav className="absolute top-0 right-0 p-6">
         <ThemeToggle />
       </nav>
@@ -114,18 +135,16 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight sm:text-5xl">
-            Modern Document{" "}
-            <span className="text-brand-600 dark:text-brand-400">Converter</span>
+          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight sm:text-5xl transition-colors duration-500">
+            <span className="text-brand-600 dark:text-brand-400">Document</span>{" "}
+            Converter
           </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-            Ubah format dokumen PDF, DOCX, dan TXT.
-            <br className="hidden sm:block" />
-            Rule test: PDF{"<->"}DOCX dan TXT{"<->"}PDF.
+          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto transition-colors duration-500">
+            Konversi file PDF, DOCX, dan TXT dengan cepat.
           </p>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/10 dark:shadow-none rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-700 transition-colors duration-300">
+        <div className="bg-white dark:bg-slate-900 shadow-xl shadow-slate-900/10 dark:shadow-none rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-700 transition-colors duration-500">
           <div className="p-8 sm:p-10">
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
@@ -154,7 +173,9 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <select
                     value={targetFormat}
-                    onChange={(event) => setTargetFormat(event.target.value as Extension)}
+                    onChange={(event) =>
+                      setTargetFormat(event.target.value as Extension)
+                    }
                     className="px-4 py-2.5 rounded-xl border border-brand-200 dark:border-brand-900/40 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 outline-none"
                   >
                     {targetOptions.map((option) => (
@@ -174,7 +195,9 @@ export default function Home() {
                 </div>
 
                 {errorMessage && (
-                  <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">
+                    {errorMessage}
+                  </p>
                 )}
 
                 {result && (
@@ -188,8 +211,8 @@ export default function Home() {
               </div>
             )}
           </div>
-          <div className="bg-slate-100 dark:bg-slate-950 px-8 py-4 text-sm text-slate-600 dark:text-slate-300 text-center border-t border-slate-200 dark:border-slate-700">
-            Technical Test Submission | Next.js 16
+          <div className="bg-slate-100 dark:bg-slate-950 px-8 py-4 text-sm text-slate-600 dark:text-slate-300 text-center border-t border-slate-200 dark:border-slate-700 transition-colors duration-500">
+            Ready to convert your documents
           </div>
         </div>
       </div>

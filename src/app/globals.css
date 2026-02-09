@@ -17,6 +17,22 @@ body {
   color: var(--app-fg);
 }
 
+body,
+main,
+section,
+div,
+p,
+h1,
+h2,
+h3,
+button,
+input,
+select {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 450ms;
+  transition-timing-function: ease-in-out;
+}
+
 /* Custom Scrollbar agar terlihat modern */
 ::-webkit-scrollbar {
   width: 8px;

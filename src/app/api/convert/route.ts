@@ -20,13 +20,18 @@ function mimeForExtension(ext: AllowedExtension): string {
   return "text/plain; charset=utf-8";
 }
 
-function isSupportedPair(sourceExt: AllowedExtension, targetExt: AllowedExtension) {
+function isSupportedPair(
+  sourceExt: AllowedExtension,
+  targetExt: AllowedExtension,
+) {
   const pair = `${sourceExt}->${targetExt}`;
   return (
     pair === "pdf->docx" ||
     pair === "docx->pdf" ||
     pair === "txt->pdf" ||
-    pair === "pdf->txt"
+    pair === "pdf->txt" ||
+    pair === "txt->docx" ||
+    pair === "docx->txt"
   );
 }
 
@@ -63,8 +68,7 @@ export async function POST(req: NextRequest) {
     if (!isSupportedPair(sourceExt, targetExt)) {
       return NextResponse.json(
         {
-          error:
-            "Konversi yang didukung hanya PDF<->DOCX dan TXT<->PDF.",
+          error: "Konversi yang didukung: PDF<->DOCX, TXT<->PDF, TXT<->DOCX.",
         },
         { status: 400 },
       );
@@ -72,22 +76,29 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const inputBuffer = Buffer.from(arrayBuffer);
-    const outputBuffer = await convertFileBuffer(sourceExt, targetExt, inputBuffer);
+    const outputBuffer = await convertFileBuffer(
+      sourceExt,
+      targetExt,
+      inputBuffer,
+    );
 
     const baseName = file.name.replace(/\.[^/.]+$/, "");
     const outputName = `${baseName}.${targetExt}`;
 
-    return new NextResponse(new Uint8Array(outputBuffer), {
+    const clean = new Uint8Array(outputBuffer).buffer as ArrayBuffer;
+
+    return new Response(clean, {
       status: 200,
       headers: {
         "Content-Type": mimeForExtension(targetExt),
-        "Content-Disposition": `attachment; filename="${outputName}"`,
+        "Content-Length": String(outputBuffer.byteLength),
       },
     });
   } catch (error) {
-    console.error("Convert error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Convert error:", message, error);
     return NextResponse.json(
-      { error: "Terjadi kesalahan saat konversi dokumen." },
+      { error: `Terjadi kesalahan saat konversi dokumen: ${message}` },
       { status: 500 },
     );
   }
