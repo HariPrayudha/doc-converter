@@ -33,11 +33,15 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
     <div
       {...getRootProps()}
       className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors
-        ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-400"}`}
+        ${
+          isDragActive
+            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
+            : "border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500"
+        }`}
     >
       <input {...getInputProps()} />
       <div className="flex flex-col items-center gap-3">
-        <div className="p-4 bg-gray-100 rounded-full">
+        <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
           {isDragActive ? (
             <FileType className="w-8 h-8 text-blue-500" />
           ) : (
@@ -45,12 +49,14 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
           )}
         </div>
         <div>
-          <p className="text-lg font-medium text-gray-700">
+          <p className="text-lg font-medium text-slate-700 dark:text-slate-100">
             {isDragActive
               ? "Drop file di sini..."
               : "Klik atau Drag file ke sini"}
           </p>
-          <p className="text-sm text-gray-500 mt-1">Support: PDF, DOCX, TXT</p>
+          <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">
+            Support: PDF, DOCX, TXT
+          </p>
         </div>
       </div>
     </div>
