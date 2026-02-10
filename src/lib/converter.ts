@@ -3,7 +3,8 @@ import { PDFParse, VerbosityLevel } from "pdf-parse";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import mammoth from "mammoth";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 const MAX_CHARS_PER_LINE = 90;
 const LINE_HEIGHT = 16;
@@ -180,8 +181,9 @@ export async function docxToPdfWithLayout(
   const fullHtml = wrapHtmlDocument(htmlBody);
 
   const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
   try {

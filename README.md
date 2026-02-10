@@ -33,7 +33,7 @@ Aplikasi web untuk mengkonversi dokumen antara format **PDF**, **DOCX**, dan **T
 - **[Next.js 16](https://nextjs.org/)** — Framework React full-stack
 - **[Tailwind CSS 4](https://tailwindcss.com/)** — Utility-first CSS
 - **[mammoth](https://www.npmjs.com/package/mammoth)** — Konversi DOCX ke HTML/teks
-- **[puppeteer](https://pptr.dev/)** — Rendering HTML ke PDF (headless Chrome)
+- **[puppeteer-core](https://pptr.dev/)** + **[@sparticuz/chromium](https://github.com/Sparticuz/chromium)** — Rendering HTML ke PDF (serverless-compatible headless Chrome)
 - **[pdf-lib](https://pdf-lib.js.org/)** — Membuat PDF dari teks
 - **[pdf-parse](https://www.npmjs.com/package/pdf-parse)** — Parsing & ekstraksi teks dari PDF
 - **[docx](https://www.npmjs.com/package/docx)** — Membuat file DOCX
@@ -43,7 +43,7 @@ Aplikasi web untuk mengkonversi dokumen antara format **PDF**, **DOCX**, dan **T
 - **Node.js** 18 atau lebih baru
 - **npm** atau **yarn** atau **pnpm**
 
-> Puppeteer akan otomatis mengunduh Chromium saat `npm install`. Pastikan koneksi internet tersedia saat instalasi pertama kali.
+> `@sparticuz/chromium` menyertakan Chromium yang sudah dioptimasi untuk serverless (Vercel/AWS Lambda). Chromium akan otomatis tersedia saat deploy.
 
 ## Instalasi
 
@@ -115,7 +115,8 @@ doc-converter/
 ## Batasan
 
 - **PDF → DOCX/TXT**: Hanya teks yang diekstrak. Gambar dan layout asli dari PDF tidak dapat dipertahankan karena keterbatasan format PDF.
-- **Ukuran file**: File yang sangat besar mungkin memerlukan waktu konversi yang lebih lama, terutama untuk konversi DOCX → PDF yang menggunakan browser headless.
+- **Ukuran file**: File yang sangat besar mungkin memerlukan waktu konversi yang lebih lama, terutama untuk konversi DOCX → PDF yang menggunakan headless Chrome.
+- **Serverless timeout**: Di Vercel (free tier), serverless function timeout-nya 10 detik. File DOCX yang besar mungkin butuh waktu lebih. Pertimbangkan upgrade ke Pro untuk timeout 60 detik.
 - **Font**: Konversi teks ke PDF menggunakan font Helvetica (standar). Konversi teks ke DOCX menggunakan font Calibri 12pt.
 
 ## Lisensi
