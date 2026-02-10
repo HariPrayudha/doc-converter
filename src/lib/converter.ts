@@ -244,7 +244,13 @@ export async function textToDocx(inputText: string): Promise<Buffer> {
   const paragraphs = normalized.split("\n").map(
     (line) =>
       new Paragraph({
-        children: [new TextRun(line || " ")],
+        children: [
+          new TextRun({
+            text: line || " ",
+            size: 24, // 12pt (docx uses half-points)
+            font: "Calibri",
+          }),
+        ],
       }),
   );
 
