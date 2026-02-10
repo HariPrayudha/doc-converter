@@ -41,7 +41,7 @@ export function ThemeToggle() {
           }`}
         />
         <Moon
-          className={`absolute h-3.5 w-3.5 text-slate-700 transition-all duration-300 ${
+          className={`absolute h-3.5 w-3.5 text-slate-700 dark:text-yellow-300 transition-all duration-300 ${
             isDark
               ? "opacity-100 rotate-0 scale-100"
               : "opacity-0 -rotate-90 scale-50"

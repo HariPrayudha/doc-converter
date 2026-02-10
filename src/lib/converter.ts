@@ -3,6 +3,7 @@ import { PDFParse, VerbosityLevel } from "pdf-parse";
 import { Document, Packer, Paragraph, TextRun } from "docx";
 import mammoth from "mammoth";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import puppeteer from "puppeteer";
 
 const MAX_CHARS_PER_LINE = 90;
 const LINE_HEIGHT = 16;
@@ -93,6 +94,110 @@ export async function docxToText(inputBuffer: Buffer): Promise<string> {
   return result.value.trim();
 }
 
+/**
+ * Convert DOCX → HTML (preserving images as embedded base64, formatting, tables, etc.)
+ */
+async function docxToHtml(inputBuffer: Buffer): Promise<string> {
+  const result = await mammoth.convertToHtml(
+    { buffer: inputBuffer },
+    {
+      convertImage: mammoth.images.imgElement(async (image) => {
+        const imageBuffer = await image.read();
+        const base64 = Buffer.from(imageBuffer).toString("base64");
+        const contentType = image.contentType || "image/png";
+        return { src: `data:${contentType};base64,${base64}` };
+      }),
+    },
+  );
+  return result.value;
+}
+
+/**
+ * Wrap mammoth HTML in a full document with styling that preserves layout
+ */
+function wrapHtmlDocument(htmlBody: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+  body {
+    font-family: 'Segoe UI', 'Arial', 'Helvetica Neue', sans-serif;
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #1a1a1a;
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  h1 { font-size: 20pt; font-weight: bold; margin: 16pt 0 8pt; }
+  h2 { font-size: 16pt; font-weight: bold; margin: 14pt 0 6pt; }
+  h3 { font-size: 13pt; font-weight: bold; margin: 12pt 0 4pt; }
+  p { margin: 0 0 8pt; }
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 8pt 0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8pt 0;
+  }
+  td, th {
+    border: 1px solid #999;
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+  }
+  ul, ol { margin: 4pt 0; padding-left: 24pt; }
+  li { margin-bottom: 4pt; }
+  strong, b { font-weight: bold; }
+  em, i { font-style: italic; }
+  u { text-decoration: underline; }
+</style>
+</head>
+<body>${htmlBody}</body>
+</html>`;
+}
+
+/**
+ * Convert DOCX → PDF preserving images and layout using mammoth + puppeteer
+ */
+export async function docxToPdfWithLayout(
+  inputBuffer: Buffer,
+): Promise<Buffer> {
+  const htmlBody = await docxToHtml(inputBuffer);
+  const fullHtml = wrapHtmlDocument(htmlBody);
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(fullHtml, { waitUntil: "networkidle0" });
+    const pdfUint8 = await page.pdf({
+      format: "A4",
+      margin: { top: "2cm", bottom: "2cm", left: "2cm", right: "2cm" },
+      printBackground: true,
+    });
+    return Buffer.from(pdfUint8);
+  } finally {
+    await browser.close();
+  }
+}
+
 export async function textToPdf(inputText: string): Promise<Buffer> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -175,8 +280,7 @@ export async function convertFileBuffer(
   }
 
   if (sourceExt === "docx" && targetExt === "pdf") {
-    const text = await docxToText(inputBuffer);
-    return textToPdf(text);
+    return docxToPdfWithLayout(inputBuffer);
   }
 
   if (sourceExt === "txt" && targetExt === "docx") {

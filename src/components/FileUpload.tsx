@@ -32,7 +32,7 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
   return (
     <div
       {...getRootProps()}
-      className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors
+      className={`border-2 border-dashed rounded-xl p-6 sm:p-10 text-center cursor-pointer transition-colors
         ${
           isDragActive
             ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
@@ -40,21 +40,21 @@ export default function FileUpload({ onFileSelect }: FileUploadProps) {
         }`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center gap-3">
-        <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
+      <div className="flex flex-col items-center gap-2.5 sm:gap-3">
+        <div className="p-3 sm:p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
           {isDragActive ? (
-            <FileType className="w-8 h-8 text-blue-500" />
+            <FileType className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" />
           ) : (
-            <UploadCloud className="w-8 h-8 text-gray-400" />
+            <UploadCloud className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" />
           )}
         </div>
         <div>
-          <p className="text-lg font-medium text-slate-700 dark:text-slate-100">
+          <p className="text-base sm:text-lg font-medium text-slate-700 dark:text-slate-100">
             {isDragActive
               ? "Drop file di sini..."
               : "Klik atau Drag file ke sini"}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-300 mt-1">
             Support: PDF, DOCX, TXT
           </p>
         </div>

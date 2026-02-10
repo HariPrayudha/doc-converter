@@ -10,7 +10,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "DocuConvert - Modern Converter",
+  title: "Document Converter",
   description: "Convert PDF, DOCX, and TXT securely.",
 };
 
