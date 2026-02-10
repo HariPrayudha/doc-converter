@@ -19,21 +19,20 @@ Aplikasi web untuk mengkonversi dokumen antara format **PDF**, **DOCX**, dan **T
 
 | Dari | Ke | Keterangan |
 |------|-----|------------|
-| DOCX | PDF | Layout, gambar, tabel, dan formatting dipertahankan |
+| DOCX | PDF | Ekstraksi teks |
 | PDF | DOCX | Ekstraksi teks (layout tidak dipertahankan) |
 | PDF | TXT | Ekstraksi teks |
 | TXT | PDF | Teks saja |
 | TXT | DOCX | Teks saja (font Calibri 12pt) |
 | DOCX | TXT | Ekstraksi teks |
 
-> **Catatan:** Konversi DOCX → PDF mempertahankan gambar dan layout karena menggunakan rendering HTML. Konversi dari PDF ke format lain hanya mengekstrak teks karena keterbatasan format PDF sebagai format visual/print.
+> **Catatan:** Semua konversi berbasis ekstraksi teks. Gambar dan layout dari dokumen asli tidak dipertahankan saat konversi antar format.
 
 ## Teknologi
 
 - **[Next.js 16](https://nextjs.org/)** — Framework React full-stack
 - **[Tailwind CSS 4](https://tailwindcss.com/)** — Utility-first CSS
-- **[mammoth](https://www.npmjs.com/package/mammoth)** — Konversi DOCX ke HTML/teks
-- **[puppeteer-core](https://pptr.dev/)** + **[@sparticuz/chromium](https://github.com/Sparticuz/chromium)** — Rendering HTML ke PDF (serverless-compatible headless Chrome)
+- **[mammoth](https://www.npmjs.com/package/mammoth)** — Ekstraksi teks dari DOCX
 - **[pdf-lib](https://pdf-lib.js.org/)** — Membuat PDF dari teks
 - **[pdf-parse](https://www.npmjs.com/package/pdf-parse)** — Parsing & ekstraksi teks dari PDF
 - **[docx](https://www.npmjs.com/package/docx)** — Membuat file DOCX
@@ -43,7 +42,7 @@ Aplikasi web untuk mengkonversi dokumen antara format **PDF**, **DOCX**, dan **T
 - **Node.js** 18 atau lebih baru
 - **npm** atau **yarn** atau **pnpm**
 
-> `@sparticuz/chromium` menyertakan Chromium yang sudah dioptimasi untuk serverless (Vercel/AWS Lambda). Chromium akan otomatis tersedia saat deploy.
+> Tidak ada dependensi eksternal seperti Chrome/Chromium. Semua konversi berjalan murni di Node.js.
 
 ## Instalasi
 
@@ -115,8 +114,7 @@ doc-converter/
 ## Batasan
 
 - **PDF → DOCX/TXT**: Hanya teks yang diekstrak. Gambar dan layout asli dari PDF tidak dapat dipertahankan karena keterbatasan format PDF.
-- **Ukuran file**: File yang sangat besar mungkin memerlukan waktu konversi yang lebih lama, terutama untuk konversi DOCX → PDF yang menggunakan headless Chrome.
-- **Serverless timeout**: Di Vercel (free tier), serverless function timeout-nya 10 detik. File DOCX yang besar mungkin butuh waktu lebih. Pertimbangkan upgrade ke Pro untuk timeout 60 detik.
+- **Ukuran file**: File yang sangat besar mungkin memerlukan waktu konversi yang lebih lama.
 - **Font**: Konversi teks ke PDF menggunakan font Helvetica (standar). Konversi teks ke DOCX menggunakan font Calibri 12pt.
 
 ## Lisensi
